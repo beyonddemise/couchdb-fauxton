@@ -21,15 +21,15 @@ Please note that [node.js](http://nodejs.org/) and npm is required. Specifically
 1. Fork this repo (see [GitHub help](https://help.github.com/articles/fork-a-repo/) for details)
 1. Clone your fork: `git clone https://github.com/YOUR-USERNAME/couchdb-fauxton.git`
 1. Go to your cloned copy: `cd couchdb-fauxton`
-1. Set up the upstream repo: 
+1. Set up the upstream repo:
     * `git remote add upstream https://github.com/apache/couchdb-fauxton.git`
     * `git fetch upstream`
     * `git branch --set-upstream-to=upstream/main main`
 1. Download all dependencies: `npm install`
 1. Make sure you have CouchDB installed.
     - Option 1 (**recommended**): Use `npm run docker:up` to start a Docker container running CouchDB with user `tester` and password `testerpass`.
-      - You need to have [Docker](https://docs.docker.com/engine/installation/) installed to use this option. 
-    - Option 2: Follow instructions 
+      - You need to have [Docker](https://docs.docker.com/engine/installation/) installed to use this option.
+    - Option 2: Follow instructions
 [found here](http://couchdb.readthedocs.org/en/latest/install/index.html)
 
 
@@ -49,10 +49,35 @@ npm run dev
 
 You should be able to access Fauxton at `http://localhost:8000`
 
+## Fauxton and Identity Providers (IdP)
+
+for now you need anonymous access to one database `/idp` with one document `settings`
+
+```json
+{
+  "_id": "settings",
+  "showUserPasswordLogin": false,
+  "showIdpLogin": true,
+  "idpName": "Local IdP KeyCloak (this appears on the login button)",
+  "idpAppId": "Fauxton",
+  "idpUrl": "http://localhost:8090/realms/empire"
+}
+```
+
+and
+
+```
+  [chttpd]
+  require_valid_user = false
+```
+
+Working on `/_idp` as alternative...
+
+And CouchDB needs to be configured to [trust the IdP](https://docs.couchdb.org/en/stable/config/auth.html#jwt_auth)
 
 ### Preparing a Fauxton Release
 
-Follow the "Setting up Fauxton" section above, then edit the `settings.json` variable root where the document will live, 
+Follow the "Setting up Fauxton" section above, then edit the `settings.json` variable root where the document will live,
 e.g. `/_utils/`. Then type:
 
 ```
@@ -84,7 +109,7 @@ part of the deployable release artifact.
 
 
 
-## More information 
+## More information
 
 Check out the following pages for a lot more information about Fauxton:
 
