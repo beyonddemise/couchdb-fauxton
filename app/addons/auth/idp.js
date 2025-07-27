@@ -29,6 +29,12 @@ const getIdPEndpoints = async (idpurl) => {
     throw new Error('IdP URL is required');
   }
 
+  // Add .wellknown
+
+  if (idpurl.indexOf('.well-known') < 0) {
+    idpurl = idpurl + '/.well-known/openid-configuration';
+  }
+
   // Check if the idpurl is already cached
   if (idpCache[idpurl]) {
     return idpCache[idpurl];
@@ -130,20 +136,6 @@ export const login = async (idpurl, idpcallback, idpappid) => {
   const authUrl = `${authEndpoint}?response_type=code&client_id=${idpappid}&redirect_uri=${idpcallback}&scope=openid#idpresult`;
   window.location.href = authUrl;
   return 'Authentication initiated';
-};
-
-export const currentIdPLogin = async () => {
-  try {
-    const idpurl = localStorage.getItem('FauxtonIdpurl');
-    const idpappid = localStorage.getItem('FauxtonIdpappid');
-    const idpcallback = localStorage.getItem('FauxtonIdpcallback');
-    await login(idpurl, idpcallback, idpappid);
-  } catch (err) {
-    FauxtonAPI.addNotification({
-      msg: err.message,
-      type: 'error'
-    });
-  }
 };
 
 export const popoulateIdpState = async () => {

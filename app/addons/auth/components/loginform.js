@@ -13,9 +13,9 @@
 import PropTypes from 'prop-types';
 
 import React from "react";
-import { login } from "./../actions";
+import { login, loginidp } from "./../actions";
 import { Button, Form } from 'react-bootstrap';
-import { currentIdPLogin, popoulateIdpState } from './../idp';
+import { popoulateIdpState } from './../idp';
 
 class LoginForm extends React.Component {
   constructor() {
@@ -57,7 +57,9 @@ class LoginForm extends React.Component {
   }
   idpSubmit(e) {
     e.preventDefault();
-    currentIdPLogin(this.state.idpUrl);
+    const curUrl = window.location;
+    const callbackUrl = `${curUrl.protocol}//${curUrl.host}${curUrl.pathname}`;
+    loginidp(this.state.idpUrl, callbackUrl, this.state.idpAppId);
   }
   login(username, password) {
     login(username, password, this.props.urlBack);

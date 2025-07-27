@@ -17,6 +17,7 @@ import { AuthLayout } from "./../layout";
 import app from "../../../app";
 import Components from "./../components";
 import {logout} from '../actions';
+import Idp from "../idp";
 
 const {
   LoginForm,
@@ -30,6 +31,7 @@ export default FauxtonAPI.RouteObject.extend({
     "login?*extra": "login",
     "login": "login",
     "logout": "logout",
+    "session_state*": "idpCallback",
     "createAdmin": "checkNodes",
     "createAdmin/:node": "createAdminForNode"
   },
@@ -46,6 +48,17 @@ export default FauxtonAPI.RouteObject.extend({
   },
   logout() {
     logout();
+  },
+  idpCallback() {
+    const urlParams = new URLSearchParams(window.location.hash);
+    const accessToken = urlParams.get('access_token');
+    const refreshToken = urlParams.get('refresh_token');
+    localStorage.setItem('fauxtonToken', accessToken);
+    localStorage.setItem('fauxtonRefreshToken', refreshToken);
+    // Extract expiry from the access token
+    const expiry = Idp.getExpiry(accessToken);
+    // eslint-disable-next-line no-console
+    console.log('Expiry:', expiry);
   },
   createAdminForNode() {
     ClusterActions.fetchNodes();
