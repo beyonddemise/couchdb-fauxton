@@ -146,6 +146,53 @@ export const currentIdPLogin = async () => {
   }
 };
 
+export const popoulateIdpState = async () => {
+  const disabled = {
+    showUserPasswordLogin: true,
+    showIdpLogin: false
+  };
+
+  // Local check first
+  const localSettings = localStorage.getItem("FauxtonIdpsettings");
+  let errorCount = parseInt((localStorage.getItem('FauxtonErrorCount') ?? '0'));
+
+  if (localSettings) {
+    const settings = JSON.parse(localSettings);
+    return settings;
+  }
+
+  if (errorCount >= 10) {
+    FauxtonAPI.addNotification({
+      msg: 'IdP fetching failed 10x, reset in localStore',
+      type: 'error'
+    });
+    return disabled;
+  }
+
+  // check with CouchDBBackend
+  // first /_idp then /idp/settings
+  const phase1 = await fetch('/_idp');
+  if (phase1.ok) {
+    localStorage.setItem('FauxtonErrorCount', '0');
+    const data = await phase1.json();
+    localStorage.setItem("FauxtonIdpsettings", JSON.stringify(data));
+    return data;
+  }
+
+  const phase2 = await fetch('/idp/settings');
+  if (phase2.ok) {
+    localStorage.setItem('FauxtonErrorCount', '0');
+    const data = await phase2.json();
+    localStorage.setItem("FauxtonIdpsettings", JSON.stringify(data));
+    return data;
+  }
+  localStorage.setItem('FauxtonErrorCount', '0');
+  errorCount++;
+  localStorage.setItem('FauxtonErrorCount', String(errorCount));
+
+  return disabled;
+};
+
 export const logout = () => {
   localStorage.removeItem('fauxtonToken');
   localStorage.removeItem('fauxtonRefreshToken');

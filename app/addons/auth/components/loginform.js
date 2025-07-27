@@ -15,21 +15,14 @@ import PropTypes from 'prop-types';
 import React from "react";
 import { login } from "./../actions";
 import { Button, Form } from 'react-bootstrap';
-import { currentIdPLogin } from './../idp';
+import { currentIdPLogin, popoulateIdpState } from './../idp';
 
 class LoginForm extends React.Component {
   constructor() {
     super();
     this.state = {
       username: "",
-      password: "",
-      showUserPasswordLogin: true,
-      showIdpLogin: true,
-      idp: {
-        url: 'http://localhost:8090/auth/realms/empire',
-        name: 'jonny be good',
-        appid: 'fauxton'
-      }
+      password: ""
     };
   }
   onUsernameChange(e) {
@@ -64,13 +57,21 @@ class LoginForm extends React.Component {
   }
   idpSubmit(e) {
     e.preventDefault();
-    currentIdPLogin();
+    currentIdPLogin(this.state.idpUrl);
   }
   login(username, password) {
     login(username, password, this.props.urlBack);
   }
-  componentDidMount() {
-    this.usernameField.focus();
+  async componentDidMount() {
+    // Load IdP info
+    const incomingState = await popoulateIdpState();
+    if (!incomingState.showUserPasswordLogin && !incomingState.showIdpLogin) {
+      incomingState.showUserPasswordLogin = true;
+    }
+    this.setState(incomingState);
+    if (this.state.showUserPasswordLogin) {
+      this.usernameField.focus();
+    }
   }
   render() {
     return (
@@ -117,7 +118,7 @@ class LoginForm extends React.Component {
           <form id="idpLogin" onSubmit={this.idpSubmit.bind(this)}>
             <div className="col12 col-md-5 col-xl-4 mb-3">
               <Button id="login-idp-btn" variant="cf-primary" type="submit">
-                Log In {this.state.idp.name}
+                Log In {this.state.idpName}
               </Button>
             </div>
           </form>
