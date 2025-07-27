@@ -163,7 +163,14 @@ export const popoulateIdpState = async () => {
 
   // check with CouchDBBackend
   // first /_idp then /idp/settings
-  const phase1 = await fetch('/_idp');
+  const fetchOptions = {
+    method: 'GET',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    }
+  };
+  const phase1 = await fetch('/_idp', fetchOptions);
   if (phase1.ok) {
     localStorage.setItem('FauxtonErrorCount', '0');
     const data = await phase1.json();
@@ -171,7 +178,7 @@ export const popoulateIdpState = async () => {
     return data;
   }
 
-  const phase2 = await fetch('/idp/settings');
+  const phase2 = await fetch('/idp/settings', fetchOptions);
   if (phase2.ok) {
     localStorage.setItem('FauxtonErrorCount', '0');
     const data = await phase2.json();
@@ -280,8 +287,6 @@ export const refreshToken = () => {
  * @returns {object} the updated fetch options object
  */
 export const addAuthToken = (fetchOptions) => {
-  // eslint-disable-next-line no-console
-  console.debug('addAuthToken', fetchOptions);
   const token = localStorage.getItem('fauxtonToken');
   if (token && jwtStillValid(token)) {
     fetchOptions.headers = {
