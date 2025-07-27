@@ -132,6 +132,13 @@ export const login = async (idpurl, idpcallback, idpappid) => {
   return 'Authentication initiated';
 };
 
+export const currentIdPLogin = async () => {
+  const idpurl = localStorage.getItem('FauxtonIdpurl');
+  const idpappid = localStorage.getItem('FauxtonIdpappid');
+  const idpcallback = localStorage.getItem('FauxtonIdpcallback');
+  return login(idpurl, idpcallback, idpappid);
+};
+
 export const logout = () => {
   localStorage.removeItem('fauxtonToken');
   localStorage.removeItem('fauxtonRefreshToken');
