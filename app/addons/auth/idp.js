@@ -133,10 +133,17 @@ export const login = async (idpurl, idpcallback, idpappid) => {
 };
 
 export const currentIdPLogin = async () => {
-  const idpurl = localStorage.getItem('FauxtonIdpurl');
-  const idpappid = localStorage.getItem('FauxtonIdpappid');
-  const idpcallback = localStorage.getItem('FauxtonIdpcallback');
-  return login(idpurl, idpcallback, idpappid);
+  try {
+    const idpurl = localStorage.getItem('FauxtonIdpurl');
+    const idpappid = localStorage.getItem('FauxtonIdpappid');
+    const idpcallback = localStorage.getItem('FauxtonIdpcallback');
+    await login(idpurl, idpcallback, idpappid);
+  } catch (err) {
+    FauxtonAPI.addNotification({
+      msg: err.message,
+      type: 'error'
+    });
+  }
 };
 
 export const logout = () => {
