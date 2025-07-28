@@ -71,7 +71,7 @@ class LoginForm extends React.Component {
       incomingState.showUserPasswordLogin = true;
     }
     this.setState(incomingState);
-    if (this.state.showUserPasswordLogin) {
+    if (incomingState.showUserPasswordLogin) {
       this.usernameField.focus();
     }
   }
@@ -82,7 +82,7 @@ class LoginForm extends React.Component {
           <form id="login" onSubmit={this.submit.bind(this)}>
             <div className="row">
               <div className="col12 col-md-5 col-xl-4 mb-3">
-                <label>Enter your username and password</label>
+                <label  htmlFor="username">Enter your username and password</label>
                 <Form.Control
                   type="text"
                   id="username"

@@ -32,7 +32,7 @@ const getIdPEndpoints = async (idpurl) => {
   // Add .wellknown
 
   if (idpurl.indexOf('.well-known') < 0) {
-    idpurl = idpurl + '/.well-known/openid-configuration';
+    idpurl = idpurl.replace(/\/$/, '') + '/.well-known/openid-configuration';
   }
 
   // Check if the idpurl is already cached
@@ -111,8 +111,9 @@ export const decodeToken = (token) => {
   try {
     const base64Url = token.split('.')[1];
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = Buffer.from(base64, 'base64url').toString('utf8');
-    return JSON.parse(jsonPayload);
+    const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4);
+    const decoded = window.atob(padded);
+    return JSON.parse(decoded);
   } catch (error) {
     return null;
   }
@@ -185,7 +186,7 @@ export const popoulateIdpState = async () => {
     localStorage.setItem("FauxtonIdpsettings", JSON.stringify(data));
     return data;
   }
-  localStorage.setItem('FauxtonErrorCount', '0');
+
   errorCount++;
   localStorage.setItem('FauxtonErrorCount', String(errorCount));
 
@@ -199,6 +200,11 @@ export const logout = () => {
 };
 
 export const codeToToken = async (url) => {
+
+  if (!url || !url.searchParams) {
+    throw new Error('Invalid URL provided');
+  }
+
   const authCode = url.searchParams.get('code');
   if (authCode) {
     const idpurl = localStorage.getItem('FauxtonIdpurl');

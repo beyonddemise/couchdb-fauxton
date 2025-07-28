@@ -66,7 +66,7 @@ for now you need anonymous access to one database `/idp` with one document `sett
 
 and
 
-```
+```ini
   [chttpd]
   require_valid_user = false
 ```

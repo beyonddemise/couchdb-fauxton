@@ -28,7 +28,11 @@ import { addAuthHeader } from '../addons/auth/idp';
 $.ajaxSetup({
   beforeSend: function (xhr) {
     xhr.setRequestHeader('X-Clacks-Overhead', 'GNU Terry Pratchett');
-    addAuthHeader(xhr);
+    try {
+      addAuthHeader(xhr);
+    } catch (error) {
+      console.error('Failed to add auth header:', error);
+    }
   }
 });
 
