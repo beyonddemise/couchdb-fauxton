@@ -13,8 +13,9 @@
 import PropTypes from 'prop-types';
 
 import React from "react";
-import { login } from "./../actions";
+import { login, loginidp } from "./../actions";
 import { Button, Form } from 'react-bootstrap';
+import { popoulateIdpState } from './../idp';
 
 class LoginForm extends React.Component {
   constructor() {
@@ -54,49 +55,76 @@ class LoginForm extends React.Component {
 
     return true;
   }
+  idpSubmit(e) {
+    e.preventDefault();
+    const curUrl = window.location;
+    const callbackUrl = `${curUrl.protocol}//${curUrl.host}${curUrl.pathname}`;
+    loginidp(this.state.idpUrl, callbackUrl, this.state.idpAppId);
+  }
   login(username, password) {
     login(username, password, this.props.urlBack);
   }
-  componentDidMount() {
-    this.usernameField.focus();
+  async componentDidMount() {
+    // Load IdP info
+    const incomingState = await popoulateIdpState();
+    if (!incomingState.showUserPasswordLogin && !incomingState.showIdpLogin) {
+      incomingState.showUserPasswordLogin = true;
+    }
+    this.setState(incomingState);
+    if (incomingState.showUserPasswordLogin) {
+      this.usernameField.focus();
+    }
   }
   render() {
     return (
       <div className="couch-login-wrapper">
-        <form id="login" onSubmit={this.submit.bind(this)}>
-          <div className="row">
-            <div className="col12 col-md-5 col-xl-4 mb-3">
-              <label>
-                Enter your username and password
-              </label>
-              <Form.Control type="text"
-                id="username"
-                name="username"
-                ref={node => this.usernameField = node}
-                placeholder="Username"
-                onChange={this.onUsernameChange.bind(this)}
-                value={this.state.username} />
+        {this.state.showUserPasswordLogin && (
+          <form id="login" onSubmit={this.submit.bind(this)}>
+            <div className="row">
+              <div className="col12 col-md-5 col-xl-4 mb-3">
+                <label  htmlFor="username">Enter your username and password</label>
+                <Form.Control
+                  type="text"
+                  id="username"
+                  name="username"
+                  ref={(node) => (this.usernameField = node)}
+                  placeholder="Username"
+                  onChange={this.onUsernameChange.bind(this)}
+                  value={this.state.username}
+                />
+              </div>
             </div>
-          </div>
-          <div className="row">
-            <div className="col12 col-md-5 col-xl-4 mb-3">
-              <Form.Control type="password"
-                id="password"
-                name="password"
-                ref={node => this.passwordField = node}
-                placeholder="Password"
-                onChange={this.onPasswordChange.bind(this)}
-                value={this.state.password} />
+            <div className="row">
+              <div className="col12 col-md-5 col-xl-4 mb-3">
+                <Form.Control
+                  type="password"
+                  id="password"
+                  name="password"
+                  ref={(node) => (this.passwordField = node)}
+                  placeholder="Password"
+                  onChange={this.onPasswordChange.bind(this)}
+                  value={this.state.password}
+                />
+              </div>
             </div>
-          </div>
-          <div className="row">
+            <div className="row">
+              <div className="col12 col-md-5 col-xl-4 mb-3">
+                <Button id="login-btn" variant="cf-primary" type="submit">
+                  Log In
+                </Button>
+              </div>
+            </div>
+          </form>
+        )}
+        {this.state.showIdpLogin && (
+          <form id="idpLogin" onSubmit={this.idpSubmit.bind(this)}>
             <div className="col12 col-md-5 col-xl-4 mb-3">
-              <Button id="login-btn" variant="cf-primary" type="submit">
-                Log In
+              <Button id="login-idp-btn" variant="cf-primary" type="submit">
+                Log In {this.state.idpName}
               </Button>
             </div>
-          </div>
-        </form>
+          </form>
+        )}
       </div>
     );
   }

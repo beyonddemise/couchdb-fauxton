@@ -17,6 +17,7 @@ import { AuthLayout } from "./../layout";
 import app from "../../../app";
 import Components from "./../components";
 import {logout} from '../actions';
+import Idp from "../idp";
 
 const {
   LoginForm,
@@ -30,6 +31,7 @@ export default FauxtonAPI.RouteObject.extend({
     "login?*extra": "login",
     "login": "login",
     "logout": "logout",
+    "session_state*": "idpCallback",
     "createAdmin": "checkNodes",
     "createAdmin/:node": "createAdminForNode"
   },
@@ -46,6 +48,46 @@ export default FauxtonAPI.RouteObject.extend({
   },
   logout() {
     logout();
+  },
+  idpCallback() {
+    const hashParams = window.location.hash.substring(1); // Remove '#'
+    const urlParams = new URLSearchParams(hashParams);
+    const accessToken = urlParams.get('access_token');
+    const refreshToken = urlParams.get('refresh_token');
+
+    if (!accessToken || !refreshToken) {
+      FauxtonAPI.addNotification({
+        msg: 'Authentication failed: Missing tokens',
+        type: 'error'
+      });
+      FauxtonAPI.navigate('/login');
+      return;
+    }
+
+    localStorage.setItem('fauxtonToken', accessToken);
+    localStorage.setItem('fauxtonRefreshToken', refreshToken);
+
+    try {
+      const expiry = Idp.getExpiry(accessToken);
+      // Schedule token refresh
+      setTimeout(() => {
+        Idp.refreshToken();
+      }, (expiry - 60) * 1000);
+
+      FauxtonAPI.addNotification({
+        msg: 'Successfully logged in via IdP',
+        type: 'success'
+      });
+      FauxtonAPI.navigate('/');
+    } catch (error) {
+      FauxtonAPI.addNotification({
+        msg: 'Token validation failed',
+        type: 'error'
+      });
+      localStorage.removeItem('fauxtonToken');
+      localStorage.removeItem('fauxtonRefreshToken');
+      FauxtonAPI.navigate('/login');
+    }
   },
   createAdminForNode() {
     ClusterActions.fetchNodes();
